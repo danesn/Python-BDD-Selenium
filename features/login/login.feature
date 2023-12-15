@@ -73,7 +73,7 @@ Feature: Login Feature
         And Required Field Password message show up
 
 
-    @negative @debugging
+    @negative
     Scenario: Failed Login with non-Existent credential
 
         Given I am on the homepage
@@ -84,4 +84,14 @@ Feature: Login Feature
         Then I still in Customer Login Page
         And Error message show up
 
-    # Need scenario wrong format email
+
+    @negative
+    Scenario: Failed Login with [Invalid Email Format]
+
+        Given I am on the homepage
+        When I click Sign In
+        Then Sign In page opens
+        When I enter "blablablu" Email
+        And I enter "" Password and Click Sign In
+        Then I still in Customer Login Page
+        And Please enter a valid email address Error show up

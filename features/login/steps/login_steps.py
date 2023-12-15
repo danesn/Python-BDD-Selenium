@@ -66,3 +66,10 @@ def step_impl(context):
     wait = WebDriverWait(context.browser, timeout=25, poll_frequency=1, ignored_exceptions=None)
     webElement = wait.until(EC.presence_of_element_located((By.XPATH, "//div[contains(@data-ui-id, 'message-error')]")))
     assert (webElement.text) == "The account sign-in was incorrect or your account is disabled temporarily. Please wait and try again later."
+
+
+@then(u'Please enter a valid email address Error show up')
+def step_impl(context):
+    wait = WebDriverWait(context.browser, timeout=25, poll_frequency=1, ignored_exceptions=None)
+    webElement = wait.until(EC.presence_of_element_located((By.ID, 'email-error')))
+    assert (webElement.text) == "Please enter a valid email address (Ex: johndoe@domain.com)."

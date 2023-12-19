@@ -1,3 +1,5 @@
+import allure
+from allure_commons.types import AttachmentType
 from behave import *
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -36,9 +38,9 @@ def step_impl(context, password):
 @then(u'I should be logged in')
 def step_impl(context):
     wait = WebDriverWait(context.browser, timeout=25, poll_frequency=1, ignored_exceptions=None)
-    webElement = wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'logged-in')))
+    webElement = wait.until(EC.presence_of_element_located((By.XPATH, "//span[contains(text(), 'Welcome, dono kasino!')]")))
+    allure.attach(context.browser.get_screenshot_as_png(), name="login", attachment_type=AttachmentType.PNG)
     assert "Welcome" in webElement.text
-
 
 @then(u'I still in Customer Login Page')
 def step_impl(context):

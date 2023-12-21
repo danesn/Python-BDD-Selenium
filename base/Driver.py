@@ -1,3 +1,5 @@
+from traceback import print_stack
+
 from selenium import webdriver
 import utilities.CustomLogger as CL
 
@@ -16,5 +18,6 @@ class Driver:
             self.log.info("Chrome driver is initializing...")
         else:
             self.log.error("Browser Name is not Found!")
+            print_stack()
 
         return driver

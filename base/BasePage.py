@@ -1,17 +1,16 @@
+from traceback import print_stack
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver import ActionChains
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 import  utilities.CustomLogger as CL
 
 class BasePage:
 
     log = CL.customLogger()
-
-    # Debug purpose
-    debugDriver = webdriver.Chrome(executable_path="test")
-    debugDriver.get("URL")
-    a = debugDriver.title
-    debugDriver.find_element(By.ID, "lala")
 
     def __init__(self, driver):
         self.driver = driver
@@ -47,3 +46,96 @@ class BasePage:
             self.log.error("LocatorType : " + locatorType + "is not Found!")
 
         return False
+
+    def getWebElement(self, locatorType, locatorValue):
+        webElement = None
+        try:
+            locatorType = locatorType.lower()
+            locatorByType = self.getLocatorType(locatorType)
+            webElement = self.driver.find_element(locatorByType, locatorValue)
+            self.log.info("WebElement found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType)
+        except:
+            self.log.error("WebElement not found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType)
+            print_stack()
+            assert False
+
+        return webElement
+
+    def waitForElement(self, locatorType, locatorValue):
+        webElement = None
+        try :
+            locatorType = locatorType.lower()
+            locatorByType = self.getLocatorType(locatorType)
+
+            wait = WebDriverWait(self.driver, timeout=25, poll_frequency=1, ignored_exceptions=None)
+            webElement = wait.until(EC.presence_of_element_located((locatorByType, locatorValue)))
+            self.log.info("WebElement found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType)
+        except:
+            self.log.error("WebElement not found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType)
+            print_stack()
+            assert False
+
+        return webElement
+
+    def clickOnElement(self, locatorType, locatorValue):
+        webElement = None
+        try:
+            webElement = self.waitForElement(locatorType, locatorValue)
+            webElement.click()
+            self.log.info("Clicked on WebElement with LocatorValue " + locatorValue + " using LocatorType " + locatorType)
+        except:
+            self.log.error("Unable to Click WebElement with LocatorValue " + locatorValue + " using LocatorType " + locatorType)
+            print_stack()
+            assert False
+
+    def sendTextToElement(self, text, locatorType, locatorValue):
+        webElement = None
+        try:
+            webElement = self.waitForElement(locatorType, locatorValue)
+            webElement.send_keys(text)
+            self.log.info("Send the text '" + text + "' with LocatorType " + locatorType + " using LocatorValue " + locatorValue)
+        except:
+            self.log.error("Unable to Send the text '" + text + "' with LocatorType " + locatorType + " using LocatorValue " + locatorValue)
+            print_stack()
+            assert False
+
+    def getTextElement(self, locatorType, locatorValue):
+        text = None
+        try:
+            webElement = self.waitForElement(locatorType, locatorValue)
+            text = webElement.text
+            self.log.info("Get the Text '" + text + "' with LocatorType " + locatorType + " LocatorValue " + locatorValue)
+        except:
+            self.log.error("Unable to Get the text with LocatorType " + locatorType + " using LocatorValue " + locatorValue)
+            print_stack()
+            assert False
+
+        return text
+
+    def isElementDisplayed(self, locatorType, locatorValue):
+        webElement = None
+        isDisplayed = None
+        try:
+            webElement = self.waitForElement(locatorType, locatorValue)
+            isDisplayed = webElement.is_displayed()
+            self.log.info("WebElement is Displayed on WebPage with LocatorType " + locatorType + " using LocatorValue " + locatorValue)
+        except:
+            self.log.error("WebElement is not Displayed on WebPage with LocatorType " + locatorType + " using LocatorValue " + locatorValue)
+            print_stack()
+            assert False
+
+        return isDisplayed
+
+    def moveToElement(self, locatorType, locatorValue): #we can use this for scrolling to the element as well
+        webElement = None
+        actions = ActionChains(self.driver)
+
+        try:
+            webElement = self.waitForElement(locatorType, locatorValue)
+            actions.move_to_element(webElement)
+            actions.perform()
+            self.log.info("Move to WebElement on Page with LocatorType " + locatorType + " using LocatorValue " + locatorValue)
+        except:
+            self.log.error("Unable to Move to WebElement on Page with LocatorType " + locatorType + " using LocatorValue " + locatorValue)
+            print_stack()
+            assert False

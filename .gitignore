@@ -1,1 +1,3 @@
-learn
+# Ignore folder "Reports"
+reports/*
+!reports/.gitkeep

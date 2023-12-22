@@ -1,12 +1,14 @@
 from traceback import print_stack
 
+import allure
+from allure_commons.types import AttachmentType
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ActionChains
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-import  utilities.CustomLogger as CL
+import utilities.CustomLogger as CL
 
 class BasePage:
 
@@ -70,6 +72,7 @@ class BasePage:
             wait = WebDriverWait(self.driver, timeout=25, poll_frequency=1, ignored_exceptions=None)
             webElement = wait.until(EC.presence_of_element_located((locatorByType, locatorValue)))
             self.log.info("WebElement found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType)
+            print("WebElement found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType)
         except:
             self.log.error("WebElement not found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType)
             print_stack()
@@ -108,6 +111,8 @@ class BasePage:
         except:
             self.log.error("Unable to Get the text with LocatorType " + locatorType + " using LocatorValue " + locatorValue)
             print_stack()
+            # Take screenshot
+            self.takeScreenshot(locatorType)
             assert False
 
         return text
@@ -139,3 +144,6 @@ class BasePage:
             self.log.error("Unable to Move to WebElement on Page with LocatorType " + locatorType + " using LocatorValue " + locatorValue)
             print_stack()
             assert False
+
+    def takeScreenshot(self, text):
+        allure.attach(self.driver.get_screenshot_as_png(), name=text, attachment_type=AttachmentType.PNG)

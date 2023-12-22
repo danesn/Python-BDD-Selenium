@@ -15,7 +15,7 @@ def customLogger():
     # 4. Create the fileHandler to save the logs in the file
     #fileHandler = logging.FileHandler("{0}.log".format(logName), mode='a')
     #fileHandler = logging.FileHandler("CustomLogger.log", mode='a')
-    fileHandler = logging.FileHandler("../reports/CustomLogger.log", mode='a')
+    fileHandler = logging.FileHandler("../BDD Selenium Python/reports/CustomLogger.log", mode='a')
 
     # 5. Set the logLevel for fileHandler
     fileHandler.setLevel(logging.DEBUG)

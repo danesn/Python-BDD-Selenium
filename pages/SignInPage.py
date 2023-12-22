@@ -23,3 +23,15 @@ class SignInPage(BasePage):
     def clickSignInButton(self):
         self.clickOnElement('id', self._signInButton)
         CL.allureLogs("Clicked sign in button")
+
+    def verifySignInPageOpen(self):
+        text = self.getTextElement('xpath', "//span[contains(text(), 'Customer Login')]")
+        assert text == "Customer Login"
+        CL.allureLogs('Verify sign in page open with "Customer Login" text')
+
+    def verifySignInSuccessful(self):
+        verifyWelcomingText = self.getTextElement('xpath', "//span[contains(text(), 'Welcome, dono kasino!')]")
+        self.takeScreenshot("verifySignInSuccessful")
+
+        assert "Welcoma" in  verifyWelcomingText
+        CL.allureLogs("Verify sign in successful")

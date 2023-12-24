@@ -18,47 +18,35 @@ class SignInTest:
         context.signinpage = SignInPage(context.driver)
 
         # Launch Web browser to the Homepage
-        context.homepage.clearAppendLog()  # Clear Log
         context.homepage.launchHomePage()
-        context.homepage.appendLog()  # Print Log
 
 
     @when(u'I click Sign In')
     def step_impl(context):
-        context.homepage.clearAppendLog()  # Clear Log
         context.homepage.clickSignIn()
-        context.homepage.appendLog()  # Print Log
 
 
     @then(u'Sign In page opens')
     def step_impl(context):
-        context.signinpage.clearAppendLog()  # Clear Log
         context.signinpage.verifySignInPageOpen()
-        context.signinpage.appendLog()  # Print Log
 
 
     @when(u'I enter {email} Email')
     def step_impl(context, email):
         email = email.replace('"', "")
-        context.signinpage.clearAppendLog() # Clear Log
         context.signinpage.enterEmail(email)
-        context.signinpage.appendLog() # Print Log
 
 
     @when(u'I enter {password} Password and Click Sign In')
     def step_impl(context, password):
         password = password.replace('"', "")
-        context.signinpage.clearAppendLog() # Clear Log
         context.signinpage.enterPassword(password)
         context.signinpage.clickSignInButton()
-        context.signinpage.appendLog() # Print Log
 
 
     @then(u'I should be logged in')
     def step_impl(context):
-        context.signinpage.clearAppendLog()  # Clear Log
         context.signinpage.verifySignInSuccessful()
-        context.signinpage.appendLog()  # Print Log
 
 
     # @then(u'I still in Customer Login Page')

@@ -9,7 +9,7 @@ class SignInPage(BasePage):
 
     # locators value in Sign In / Login Page
     _emailInput = 'email' # id
-    _passwordInput = 'passto' # id
+    _passwordInput = 'pass' # id
     _signInButton = 'send2' # id
 
     def enterEmail(self, email):

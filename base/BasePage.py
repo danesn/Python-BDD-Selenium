@@ -16,14 +16,25 @@ class BasePage:
 
     def __init__(self, driver):
         self.driver = driver
+        self.aggregateLog = ""
 
     def launchWebPage(self, url, title):
         try:
             self.driver.get(url)
             assert self.driver.title == title
+
+            # Logging
             self.log.info("Web Page Launch with URL : " + url)
+            self.aggregateLog += "Web Page Launch with URL : " + url + "\n"
+            print("Web Page Launch with URL : " + url)
+
         except:
+
+            # Logging
             self.log.error("Web Page not Launch with URL : " + url)
+            self.aggregateLog += "Web Page not Launch with URL : " + url + "\n"
+            print("Web Page not Launch with URL : " + url)
+            print_stack()
 
     def getLocatorType(self, locatorType):
         locatorType = locatorType.lower()
@@ -54,11 +65,23 @@ class BasePage:
         try:
             locatorType = locatorType.lower()
             locatorByType = self.getLocatorType(locatorType)
+            textLogFound = "WebElement found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType
+            textLogError = "WebElement not found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType
+
             webElement = self.driver.find_element(locatorByType, locatorValue)
-            self.log.info("WebElement found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType)
+
+            # Logging
+            self.log.info(textLogFound) # CustomLogger.log
+            self.aggregateLog += textLogFound + "\n"
+            print(textLogFound)
+
         except:
-            self.log.error("WebElement not found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType)
+            # Logging
+            self.log.error(textLogError) # CustomLogger.log
+            self.aggregateLog += textLogError + "\n"
+            print(textLogError)
             print_stack()
+
             assert False
 
         return webElement
@@ -68,27 +91,60 @@ class BasePage:
         try :
             locatorType = locatorType.lower()
             locatorByType = self.getLocatorType(locatorType)
+            textLogFound = "WebElement found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType
+            textLogError = "WebElement not found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType
 
             wait = WebDriverWait(self.driver, timeout=25, poll_frequency=1, ignored_exceptions=None)
             webElement = wait.until(EC.presence_of_element_located((locatorByType, locatorValue)))
-            self.log.info("WebElement found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType)
-            print("WebElement found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType)
+
+            # Log
+            self.log.info(textLogFound)
+            self.aggregateLog += textLogFound + "\n"
+            print(textLogFound)
+
+            # debug
+            # allure.attach(
+            #     "WebElement found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType,
+            #     name="WaitForElement.log"
+            # )
+
         except:
-            self.log.error("WebElement not found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType)
+            # Log
+            self.log.error(textLogError)
+            self.aggregateLog += textLogError + "\n"
+            print(textLogError)
             print_stack()
+
+            # debug
+            # allure.attach(
+            #     "WebElement found with LocatorValue " + locatorValue + " using LocatorByType " + locatorByType,
+            #     name="WaitForElement.log"
+            # )
+
             assert False
 
         return webElement
 
     def clickOnElement(self, locatorType, locatorValue):
         webElement = None
+        textLogFound = "Clicked on WebElement with LocatorValue " + locatorValue + " using LocatorType " + locatorType
+        textLogError = "Unable to Click WebElement with LocatorValue " + locatorValue + " using LocatorType " + locatorType
         try:
             webElement = self.waitForElement(locatorType, locatorValue)
             webElement.click()
-            self.log.info("Clicked on WebElement with LocatorValue " + locatorValue + " using LocatorType " + locatorType)
+
+            # Log
+            self.log.info(textLogFound) # CustomLogger.log
+            self.aggregateLog += textLogFound + "\n"
+            print(textLogFound)
+
         except:
-            self.log.error("Unable to Click WebElement with LocatorValue " + locatorValue + " using LocatorType " + locatorType)
+            # Log
+            self.log.error(textLogError) # CustomLogger.log
+            self.aggregateLog += textLogError + "\n"
+            print(textLogError)
             print_stack()
+
             assert False
 
     def sendTextToElement(self, text, locatorType, locatorValue):
@@ -96,10 +152,22 @@ class BasePage:
         try:
             webElement = self.waitForElement(locatorType, locatorValue)
             webElement.send_keys(text)
-            self.log.info("Send the text '" + text + "' with LocatorType " + locatorType + " using LocatorValue " + locatorValue)
+
+            textLogFound = "Send the text '" + text + "' with LocatorType " + locatorType + " using LocatorValue " + locatorValue
+            textLogError = "Unable to Send the text '" + text + "' with LocatorType " + locatorType + " using LocatorValue " + locatorValue
+
+            # Log
+            self.log.info(textLogFound)  # CustomLogger.log
+            self.aggregateLog += textLogFound + "\n"
+            print(textLogFound)
+
         except:
-            self.log.error("Unable to Send the text '" + text + "' with LocatorType " + locatorType + " using LocatorValue " + locatorValue)
+            # Log
+            self.log.error(textLogError)  # CustomLogger.log
+            self.aggregateLog += textLogError + "\n"
+            print(textLogError)
             print_stack()
+
             assert False
 
     def getTextElement(self, locatorType, locatorValue):
@@ -107,10 +175,22 @@ class BasePage:
         try:
             webElement = self.waitForElement(locatorType, locatorValue)
             text = webElement.text
-            self.log.info("Get the Text '" + text + "' with LocatorType " + locatorType + " LocatorValue " + locatorValue)
+
+            textLogFound = "Get the Text '" + text + "' with LocatorType " + locatorType + " LocatorValue " + locatorValue
+            textLogError = "Unable to Get the text with LocatorType " + locatorType + " using LocatorValue " + locatorValue
+
+            # Log
+            self.log.info(textLogFound)  # CustomLogger.log
+            self.aggregateLog += textLogError + "\n"
+            print(textLogFound)
+
         except:
-            self.log.error("Unable to Get the text with LocatorType " + locatorType + " using LocatorValue " + locatorValue)
+            # Log
+            self.log.error(textLogError)  # CustomLogger.log
+            self.aggregateLog += textLogError + "\n"
+            print(textLogError)
             print_stack()
+
             # Take screenshot
             self.takeScreenshot(locatorType)
             assert False
@@ -120,18 +200,29 @@ class BasePage:
     def isElementDisplayed(self, locatorType, locatorValue):
         webElement = None
         isDisplayed = None
+        textLogFound = "WebElement is Displayed on WebPage with LocatorType " + locatorType + " using LocatorValue " + locatorValue
+        textLogError = "WebElement is not Displayed on WebPage with LocatorType " + locatorType + " using LocatorValue " + locatorValue
         try:
             webElement = self.waitForElement(locatorType, locatorValue)
             isDisplayed = webElement.is_displayed()
-            self.log.info("WebElement is Displayed on WebPage with LocatorType " + locatorType + " using LocatorValue " + locatorValue)
+
+            # Log
+            self.log.info(textLogFound)  # CustomLogger.log
+            self.aggregateLog += textLogFound + "\n"
+            print(textLogFound)
+
         except:
-            self.log.error("WebElement is not Displayed on WebPage with LocatorType " + locatorType + " using LocatorValue " + locatorValue)
+            # Log
+            self.log.error(textLogError)  # CustomLogger.log
+            self.aggregateLog += textLogError + "\n"
+            print(textLogError)
             print_stack()
+
             assert False
 
         return isDisplayed
 
-    def moveToElement(self, locatorType, locatorValue): #we can use this for scrolling to the element as well
+    def moveToElement(self, locatorType, locatorValue): # we can use this for scrolling to the element as well
         webElement = None
         actions = ActionChains(self.driver)
 
@@ -147,3 +238,12 @@ class BasePage:
 
     def takeScreenshot(self, text):
         allure.attach(self.driver.get_screenshot_as_png(), name=text, attachment_type=AttachmentType.PNG)
+
+    def appendLog(self):
+        allure.attach(
+            self.aggregateLog,
+            name="WellDone.log"
+        )
+
+    def clearAppendLog(self):
+        self.aggregateLog = ""

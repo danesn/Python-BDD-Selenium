@@ -9,7 +9,7 @@ class SignInPage(BasePage):
 
     # locators value in Sign In / Login Page
     _emailInput = 'email' # id
-    _passwordInput = 'pass' # id
+    _passwordInput = 'passto' # id
     _signInButton = 'send2' # id
 
     def enterEmail(self, email):
@@ -26,6 +26,7 @@ class SignInPage(BasePage):
 
     def verifySignInPageOpen(self):
         text = self.getTextElement('xpath', "//span[contains(text(), 'Customer Login')]")
+
         assert text == "Customer Login"
         CL.allureLogs('Verify sign in page open with "Customer Login" text')
 
@@ -33,5 +34,5 @@ class SignInPage(BasePage):
         verifyWelcomingText = self.getTextElement('xpath', "//span[contains(text(), 'Welcome, dono kasino!')]")
         self.takeScreenshot("verifySignInSuccessful")
 
-        assert "Welcoma" in  verifyWelcomingText
+        assert "Welcome" in  verifyWelcomingText
         CL.allureLogs("Verify sign in successful")

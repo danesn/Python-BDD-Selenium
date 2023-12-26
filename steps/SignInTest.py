@@ -49,36 +49,26 @@ class SignInTest:
         context.signinpage.verifySignInSuccessful()
 
 
-    # @then(u'I still in Customer Login Page')
-    # def step_impl(context):
-    #     wait = WebDriverWait(context.browser, timeout=25, poll_frequency=1, ignored_exceptions=None)
-    #     webElement = wait.until(EC.presence_of_element_located((By.XPATH, "//span[contains(text(), 'Customer Login')]")))
-    #     assert (webElement.text) == "Customer Login"
-    #
-    #
-    # @then(u'Required Field Email message show up')
-    # def step_impl(context):
-    #     wait = WebDriverWait(context.browser, timeout=25, poll_frequency=1, ignored_exceptions=None)
-    #     webElement = wait.until(EC.presence_of_element_located((By.ID, 'email-error')))
-    #     assert (webElement.text) == "This is a required field."
-    #
-    #
-    # @then(u'Required Field Password message show up')
-    # def step_impl(context):
-    #     wait = WebDriverWait(context.browser, timeout=25, poll_frequency=1, ignored_exceptions=None)
-    #     webElement = wait.until(EC.presence_of_element_located((By.ID, 'pass-error')))
-    #     assert (webElement.text) == "This is a required field."
-    #
-    #
-    # @then(u'Error message show up')
-    # def step_impl(context):
-    #     wait = WebDriverWait(context.browser, timeout=25, poll_frequency=1, ignored_exceptions=None)
-    #     webElement = wait.until(EC.presence_of_element_located((By.XPATH, "//div[contains(@data-ui-id, 'message-error')]")))
-    #     assert (webElement.text) == "The account sign-in was incorrect or your account is disabled temporarily. Please wait and try again later."
-    #
-    #
-    # @then(u'Please enter a valid email address Error show up')
-    # def step_impl(context):
-    #     wait = WebDriverWait(context.browser, timeout=25, poll_frequency=1, ignored_exceptions=None)
-    #     webElement = wait.until(EC.presence_of_element_located((By.ID, 'email-error')))
-    #     assert (webElement.text) == "Please enter a valid email address (Ex: johndoe@domain.com)."
+    @then(u'I still in Customer Login Page')
+    def step_impl(context):
+        context.signinpage.verifySignInPageOpen()
+
+
+    @then(u'Required Field Email message show up')
+    def step_impl(context):
+        context.signinpage.checkIfRequiredEmailMessageShowup()
+
+
+    @then(u'Required Field Password message show up')
+    def step_impl(context):
+        context.signinpage.checkIfRequiredPasswordMessageShowup()
+
+
+    @then(u'Error message show up')
+    def step_impl(context):
+        context.signinpage.checkIfPasswordMessageShowup()
+
+
+    @then(u'Please enter a valid email address Error show up')
+    def step_impl(context):
+        context.signinpage.checkIfEnterValidEmailMessageShowup()

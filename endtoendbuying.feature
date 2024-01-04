@@ -13,7 +13,7 @@ Feature: EndToEnd Buy Product
     When I Choose Size, Color, and Quantity the Product
     And I Click Add to Cart button
     Then The Product Success Added to Shopping Cart
-    When I Click Shopping Cart from Success Message
+    When I Go to the Shopping Cart
     Then Shopping Cart Page appears
     And I Verify the Product data is Valid
     When I Click Proceed to Checkout button

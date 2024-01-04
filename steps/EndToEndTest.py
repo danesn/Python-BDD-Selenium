@@ -85,7 +85,7 @@ class EndToEndTest:
         # 2. Get the product title and price, then sent to Global context
         elementProductTitle = firstProduct.find_element(By.CLASS_NAME, "product-item-link")
         elementProductPrice = firstProduct.find_element(By.CLASS_NAME, "price")
-        context.productTitle = elementProductTitle.text
+        context.productName = elementProductTitle.text
         context.productPrice = elementProductPrice.text
 
         # 3. Scroll/Move to the price element
@@ -105,7 +105,7 @@ class EndToEndTest:
         elementProductTitle = wait.until(EC.presence_of_element_located((By.XPATH, "//span[@itemprop='name']")))
         elementProductPrice = wait.until(EC.presence_of_element_located((By.XPATH, "//span[@data-price-type='finalPrice']")))
         # 2. Makesure the title and the price of the product is consistent
-        assert elementProductTitle.text == context.productTitle
+        assert elementProductTitle.text == context.productName
         assert elementProductPrice.text == context.productPrice
 
 
@@ -171,19 +171,119 @@ class EndToEndTest:
 
         # Search success alert element and Check the success message
         elementAlert = wait.until(EC.presence_of_element_located((By.XPATH, "//div[@data-ui-id='message-success']")))
-        assert elementAlert.text == "You added " + context.productTitle + " to your shopping cart."
+        assert elementAlert.text == "You added " + context.productName + " to your shopping cart."
 
-    @when(u'I Click Shopping Cart from Success Message')
+    @when(u'I Go to the Shopping Cart')
     def step_impl(context):
-        raise NotImplementedError(u'STEP: When I Click Shopping Cart from Success Message')
+        wait = WebDriverWait(context.driver, timeout=25, poll_frequency=1, ignored_exceptions=None)
+
+
+        # SHOPPING CART
+        # 1. Get Shopping cart element, click the element then Assert to makesure dropdowndialog shopping cart showup
+        elementShoppingCart = wait.until(EC.presence_of_element_located((By.XPATH, "//div[@data-block='minicart']")))
+        elementShoppingCart.click()
+        cartClassName = elementShoppingCart.get_attribute("class")
+        assert "active" in cartClassName
+
+
+        # SHOPPING CART DROPDOWN DIALOG
+        # 2. Get Dropdowndialog shopping cart as base element, then get Amount Item in Cart and get Cart Subtotal
+        elementDropdownDialog = wait.until(EC.presence_of_element_located((By.XPATH, "//div[@data-role='dropdownDialog']")))
+        dropdownItemAmountInCart = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "items-total")))
+        dropdownDialogSubTotal = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "price")))
+        assert dropdownItemAmountInCart.text == "1 Item in Cart"
+        assert dropdownDialogSubTotal.text == context.productPrice
+
+        # 3. Get ProductItemDetail as base element from context elementDropdownDialog
+        productItemDetail = WebDriverWait(elementDropdownDialog, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "product-item-details"))
+        )
+
+
+        # PRODUCT NAME, PRICE, QTY
+        # 4. Use ProductItemDetail as context, then find Item/Product Name, Product Price, and Product Qty input
+        productName = WebDriverWait(productItemDetail, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "product-item-name"))
+        )
+        productPrice = WebDriverWait(productItemDetail, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "price"))
+        )
+        productQty = WebDriverWait(productItemDetail, 10).until(
+            EC.presence_of_element_located((By.TAG_NAME, "input"))
+        )
+        assert productName.text == context.productName
+        assert productPrice.text == context.productPrice
+        assert productQty.get_attribute("data-item-qty") == "1"
+
+
+        # SEE DETAILS (Size and Color)
+        # 5. Get See Details element on the Dialog, then click the Details and Assert should be showup
+        elementSeeDetails = WebDriverWait(productItemDetail, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//div[@role='tablist']"))
+        )
+        elementSeeDetails.click()
+        detailTabActive = elementSeeDetails.get_attribute("class")
+        assert "active" in detailTabActive
+
+        # 6. Get Size and Color element then Assert to makesure the color and the size are consistent
+        elementsValues = WebDriverWait(elementSeeDetails, 10).until(
+            EC.presence_of_all_elements_located((By.XPATH, "//dd[@class='values']"))
+        )
+        assert len(elementsValues) == 2 # ElementValue[0] = size, ElementValue[1] = color
+        assert elementsValues[0].text == context.productSize
+        assert elementsValues[1].text == context.productColor
+
+        # VIEW AND EDIT
+        # 7. Click View and Edit Cart and go to Shopping Cart Page
+        elementViewAndEditCart = WebDriverWait(elementDropdownDialog, 10).until(
+            EC.presence_of_element_located((By.LINK_TEXT, "View and Edit Cart"))
+        )
+        elementViewAndEditCart.click()
+
 
     @then(u'Shopping Cart Page appears')
     def step_impl(context):
-        raise NotImplementedError(u'STEP: Then Shopping Cart Page appears')
+        wait = WebDriverWait(context.driver, timeout=25, poll_frequency=1, ignored_exceptions=None)
+
+        element = wait.until(EC.presence_of_element_located((By.XPATH, "//span[@data-ui-id='page-title-wrapper' and text()='Shopping Cart']")))
+        assert context.driver.title == "Shopping Cart"
+        assert element.text == "Shopping Cart"
 
     @then(u'I Verify the Product data is Valid')
     def step_impl(context):
-        raise NotImplementedError(u'STEP: Then I Verify the Product data is Valid')
+        wait = WebDriverWait(context.driver, timeout=25, poll_frequency=1, ignored_exceptions=None)
+
+        # TABLE Data
+        # 1. Get table data
+        elementShoppingCartTables = wait.until(EC.presence_of_element_located((By.ID, "shopping-cart-table")))
+
+        # 2. Get Product Name and Assert
+        productName = WebDriverWait(elementShoppingCartTables, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "product-item-name"))
+        )
+        assert productName.text == context.productName
+
+        # 3. Get Size and Color then Assert
+        itemOptions = WebDriverWait(elementShoppingCartTables, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "item-options"))
+        )
+        itemValues = WebDriverWait(itemOptions, 10).until(
+            EC.presence_of_all_elements_located((By.TAG_NAME, "dd"))
+        )
+        assert len(itemValues) == 2 # itemValues[0] = size, itemValues[1] = color
+        assert itemValues[0].text == context.productSize
+        assert itemValues[1].text == context.productColor
+
+        # 4 . Get Price, Get SubTotal, Get Quantity then Assert
+        productPriceTable = elementShoppingCartTables.find_element(By.XPATH, "//td[@data-th='Price']")
+        productSubTotalTable = elementShoppingCartTables.find_element(By.XPATH, "//td[@data-th='Subtotal']")
+        productQtyTable = elementShoppingCartTables.find_element(By.TAG_NAME, "input")
+        assert productPriceTable.text == context.productPrice
+        assert productSubTotalTable.text == context.productPrice
+        assert productQtyTable.get_attribute("value") == "1"
+
+
+        # SUMMARY
 
     @when(u'I Click Proceed to Checkout button')
     def step_impl(context):

@@ -1,4 +1,5 @@
 import time
+from decimal import Decimal
 
 from behave import *
 from selenium import webdriver
@@ -6,6 +7,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.select import Select
 
 
 class EndToEndTest:
@@ -233,6 +235,7 @@ class EndToEndTest:
         assert elementsValues[0].text == context.productSize
         assert elementsValues[1].text == context.productColor
 
+
         # VIEW AND EDIT
         # 7. Click View and Edit Cart and go to Shopping Cart Page
         elementViewAndEditCart = WebDriverWait(elementDropdownDialog, 10).until(
@@ -245,6 +248,7 @@ class EndToEndTest:
     def step_impl(context):
         wait = WebDriverWait(context.driver, timeout=25, poll_frequency=1, ignored_exceptions=None)
 
+        # Get title page and then Makesure the title page is Shopping Cart
         element = wait.until(EC.presence_of_element_located((By.XPATH, "//span[@data-ui-id='page-title-wrapper' and text()='Shopping Cart']")))
         assert context.driver.title == "Shopping Cart"
         assert element.text == "Shopping Cart"
@@ -253,17 +257,18 @@ class EndToEndTest:
     def step_impl(context):
         wait = WebDriverWait(context.driver, timeout=25, poll_frequency=1, ignored_exceptions=None)
 
-        # TABLE Data
-        # 1. Get table data
+        # TABLE Data Product
+        # 1. Get table data as BASE finding
         elementShoppingCartTables = wait.until(EC.presence_of_element_located((By.ID, "shopping-cart-table")))
 
-        # 2. Get Product Name and Assert
+
+        # 2. Get Product Name and then Makesure the Product Name is consistent
         productName = WebDriverWait(elementShoppingCartTables, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "product-item-name"))
         )
         assert productName.text == context.productName
 
-        # 3. Get Size and Color then Assert
+        # 3. Get Size and Color and then Makesure the Size and the Color are consistent
         itemOptions = WebDriverWait(elementShoppingCartTables, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "item-options"))
         )
@@ -274,7 +279,7 @@ class EndToEndTest:
         assert itemValues[0].text == context.productSize
         assert itemValues[1].text == context.productColor
 
-        # 4 . Get Price, Get SubTotal, Get Quantity then Assert
+        # 4 . Get Price, Get SubTotal, Get Quantity then Makesure the Price, Subtotal, and Quantity on the table are consistent
         productPriceTable = elementShoppingCartTables.find_element(By.XPATH, "//td[@data-th='Price']")
         productSubTotalTable = elementShoppingCartTables.find_element(By.XPATH, "//td[@data-th='Subtotal']")
         productQtyTable = elementShoppingCartTables.find_element(By.TAG_NAME, "input")
@@ -283,19 +288,202 @@ class EndToEndTest:
         assert productQtyTable.get_attribute("value") == "1"
 
 
-        # SUMMARY
+        # SUMMARY Data Product
+        # 5. Click Estimate Shipping and Tax then Makesure the detail Shipping and Tax appears
+        estimateShippingTax = wait.until(EC.presence_of_element_located((By.ID, "block-shipping")))
+        estimateShippingTax.click()
+        estimateShippingClass = estimateShippingTax.get_attribute("class")
+        assert "active" in estimateShippingClass
+
+        # 6. Select Country
+        elementSelectCountry = wait.until(EC.presence_of_element_located((By.NAME, "country_id")))
+        elementSelectCountry.click()
+        selectDropdown = Select(elementSelectCountry)
+        # values = selectDropdown.options
+        selectDropdown.select_by_value("ID")
+
+        # 7. Input State/Province
+        elementProvince = wait.until(EC.presence_of_element_located((By.NAME, "region")))
+        elementProvince.clear()
+        elementProvince.send_keys("Jakarta")
+
+        # 8. Input ZIP/Postal Code
+        elementPostalCode = wait.until(EC.presence_of_element_located((By.NAME, "postcode")))
+        elementPostalCode.clear()
+        elementPostalCode.send_keys("11440")
+
+        # 9. Click RadioButton FlatRate Shipping
+        elementRadioFlatRate = wait.until(EC.presence_of_element_located((By.ID, "s_method_flatrate_flatrate")))
+        action = ActionChains(context.driver)
+        action.move_to_element(elementRadioFlatRate)
+        action.perform()
+        elementRadioFlatRate.click()
+
+        # 10. Get Shipping FlatRate Price
+        time.sleep(6) # Wait 6 Sec (Loading)
+        elementFieldChoiceItem = wait.until(EC.presence_of_element_located((By.XPATH, "//div[@class='field choice item']")))
+        elementPriceFlatRate = elementFieldChoiceItem.find_element(By.CLASS_NAME, 'price')
+        splitString = elementPriceFlatRate.text
+        flatRateValue = Decimal(splitString.split('$')[1]) # Get dollar value
+        context.shippingPriceFlatRate = flatRateValue
+
+
+        # ElementCartTotals as BASE
+        elementCartTotals = wait.until(EC.presence_of_element_located((By.ID, "cart-totals")))
+        # Element TotalsSub as CHILD BASE
+        elementTotalsSub = WebDriverWait(elementCartTotals, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//tr[@class='totals sub']"))
+        )
+
+        # 11. Get Subtotal Price from SUMMARY
+        elementPriceSubtotal = WebDriverWait(elementTotalsSub, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//span[@data-th='Subtotal']"))
+        )
+        elementTotalShipping = WebDriverWait(elementCartTotals, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//tr[@class='totals shipping excl']"))
+        )
+        # 12. Get Shipping Price from SUMMARY
+        elementPriceWithShipping = WebDriverWait(elementTotalShipping, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//span[@data-th='Shipping']"))
+        )
+
+        # Grand Totals as BASE
+        elementGrandTotals = wait.until(EC.presence_of_element_located((By.XPATH, "//tr[@class='grand totals']")))
+        # 13. Get Order Total Price from SUMMARY
+        elementOrderTotal = WebDriverWait(elementGrandTotals, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//td[@data-th='Order Total']"))
+        )
+
+        print("------------------------------------------------------")
+        print("elementPriceSubtotal : " + elementPriceSubtotal.text)
+        print("price with shipping : " + elementPriceWithShipping.text)
+        print("Order total : ", elementOrderTotal.text)
+
+        splitPriceSubtotal = elementPriceSubtotal.text
+        priceSubtotal = Decimal(splitPriceSubtotal.split('$')[1]) # Get dollar value
+        splitPriceShipping = elementPriceWithShipping.text
+        priceShipping = Decimal(splitPriceShipping.split("$")[1]) # Get dollar value
+        splitOrdertotal = elementOrderTotal.text
+        orderTotal = Decimal(splitOrdertotal.split("$")[1]) # Get dollar value
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c")
+        print(priceSubtotal)
+        print(priceShipping)
+        print(orderTotal)
+        
+        assert priceShipping == context.shippingPriceFlatRate
+        assert (priceSubtotal+priceShipping) == orderTotal
 
     @when(u'I Click Proceed to Checkout button')
     def step_impl(context):
-        raise NotImplementedError(u'STEP: When I Click Proceed to Checkout button')
+        wait = WebDriverWait(context.driver, timeout=25, poll_frequency=1, ignored_exceptions=None)
+
+        # Click Checkout Button
+        elementBtnCheckout = wait.until(EC.presence_of_element_located((By.XPATH, "//button[@data-role='proceed-to-checkout']")))
+        elementBtnCheckout.click()
 
     @then(u'Shipping Address appears')
     def step_impl(context):
-        raise NotImplementedError(u'STEP: Then Shipping Address appears')
+        wait = WebDriverWait(context.driver, timeout=25, poll_frequency=1, ignored_exceptions=None)
+        try:
+            wait.until(EC.invisibility_of_element_located((By.ID, "checkout-loader")))
+        except:
+            print("Time out")
+
+        # Base ShippingAdress
+        baseShippingAddress = wait.until(EC.presence_of_element_located((By.ID, "shipping")))
+        # Get Element Title then Makesure there is title on the page "Shipping Adress"
+        elementTitle = WebDriverWait(baseShippingAddress, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "step-title"))
+        )
+        assert elementTitle.text == "Shipping Address"
+        assert context.driver.title == "Checkout"
 
     @then(u'I Verify the Product from Order Summary is Valid')
     def step_impl(context):
-        raise NotImplementedError(u'STEP: Then I Verify the Product from Order Summary is Valid')
+        wait = WebDriverWait(context.driver, timeout=25, poll_frequency=1, ignored_exceptions=None)
+
+        # Block Order Summary as BASE
+        baseBlockSummary = wait.until(EC.presence_of_element_located((By.CLASS_NAME, "opc-block-summary")))
+
+        # 1. Verify and makesure the Item Count in Order Summary is 1
+        elementItemCount = WebDriverWait(baseBlockSummary, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//span[@data-bind='text: getCartSummaryItemsCount()']"))
+        )
+        # Debug
+        print("---------1.Verify and makesure the Item Count in Order Summary is 1------")
+        print("elementItemCount : " + elementItemCount.text)
+        assert elementItemCount.text == "1"
+
+        # 2. Click Item In Cart then makesure the ItemCart is active
+        elementItemInCart = WebDriverWait(baseBlockSummary, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//div[@class='block items-in-cart']"))
+        )
+        elementItemInCart.click()
+        time.sleep(10)
+        # Debug
+        print("---------2.Click Item In Cart then makesure the ItemCart is active------")
+        print("class now : " + elementItemInCart.get_attribute("class"))
+        assert "active" in elementItemInCart.get_attribute("class")
+
+
+        # Product Item Detail as BASE CHILD (Block Order Summary)
+        baseProductItemDetails = WebDriverWait(baseBlockSummary, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "product-item-details"))
+        )
+
+        # 3. Verify Product Item Name is consistent
+        elementProductItemName = WebDriverWait(baseProductItemDetails, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "product-item-name"))
+        )
+        # Debug
+        print("---------3.Verify Product Item Name is consistent------")
+        print("elementProductItemName : " + elementProductItemName.text)
+        print("context.productName : " + context.productName)
+        assert elementProductItemName.text == context.productName
+
+        # 4. Verify Product Quantity is 1
+        elementProductQty = WebDriverWait(baseProductItemDetails, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "value"))
+        )
+        # Debug
+        print("---------4.Verify Product Quantity is 1------")
+        print("elementProductQty : " + elementProductQty.text)
+        assert elementProductQty.text == "1"
+
+        # 5. Verify Product Price is consistent
+        elementProductPrice = WebDriverWait(baseProductItemDetails, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "price"))
+        )
+        # Debug
+        print("---------5.Verify Product Price is consistent------")
+        print("elementProductPrice : " + elementProductPrice.text)
+        print("context.productPrice : " + context.productPrice)
+        assert elementProductPrice.text == context.productPrice
+
+        # 6. Click View Details toggle and makesure the view details toggle is active
+        elementViewDetails = WebDriverWait(baseProductItemDetails, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "toggle"))
+        )
+        elementViewDetails.click()
+        # Debug
+        print("---------6.Click View Details toggle and makesure the view details toggle is active------")
+        print("aria-selected : " + elementViewDetails.get_attribute("aria-selected"))
+        print("aria-expanded : " + elementViewDetails.get_attribute("aria-expanded"))
+        assert elementViewDetails.get_attribute("aria-selected") == "true"
+        assert elementViewDetails.get_attribute("aria-expanded") == "true"
+
+        # 7. Verify the Product Size and the Product Color is consistent
+        elementsValues = WebDriverWait(baseProductItemDetails, 10).until(
+            EC.presence_of_all_elements_located((By.CLASS_NAME, "values"))
+        )
+        # Debug
+        print("---------7.Verify the Product Size and the Product Color is consistent------")
+        print("size: " + elementsValues[0].text)
+        print("color: " + elementsValues[1].text)
+        assert len(elementsValues) == 2 # elementValues[0] = size, elementValues[1] = color
+        assert elementsValues[0].text == context.productSize # Size
+        assert elementsValues[1].text == context.productColor # Color
+
 
     @when(u'I Click + New Address button')
     def step_impl(context):
